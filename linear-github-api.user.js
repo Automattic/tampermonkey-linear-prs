@@ -825,8 +825,9 @@
                         <ol>
                             <li>Go to <strong>Linear.app</strong> and log in</li>
                             <li>Click your avatar → <strong>Settings</strong></li>
-                            <li>In the left sidebar, click <strong>API</strong></li>
-                            <li>Click <strong>Create new API key</strong></li>
+                            <li>In the left sidebar, click <strong>Security & access</strong></li>
+                            <li>Scroll down to <strong>Personal API keys</strong> section</li>
+                            <li>Click <strong>New API key</strong></li>
                             <li>Give it a name like <code>GitHub Integration</code></li>
                             <li>Copy the key (starts with <code>lin_api_</code>)</li>
                             <li>Paste it in the field above</li>
@@ -862,7 +863,7 @@
                     <input type="checkbox" id="linear-first-section-only" ${linearConfig.firstSectionOnly ? 'checked' : ''}>
                     <label for="linear-first-section-only">Include only first heading and content below it</label>
                 </div>
-                <div class="help-text">When enabled, only includes the first heading (## Title) and all content until the next heading in the Linear issue description</div>
+                <div class="help-text">When enabled, only the first heading and content until the next heading will be sent to Linear (the full PR description is still searched for existing Linear issues)</div>
             </div>
             
             <div class="linear-settings-buttons">
