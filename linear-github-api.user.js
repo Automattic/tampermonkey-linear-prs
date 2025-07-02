@@ -308,13 +308,35 @@
         checkExistingLink();
     }
 
+    function getPRDescriptionForDetection() {
+        // This function gets the full description for detection purposes, ignoring firstSectionOnly
+        const firstComment = document.querySelector('.comment-body');
+        if (!firstComment) return '';
+
+        const clone = firstComment.cloneNode(true);
+        
+        // Remove the Linear integration section and everything after it
+        const linearSection = clone.querySelector('.linear-api-integration');
+        if (linearSection) {
+            // Remove the Linear section itself
+            linearSection.remove();
+        }
+        
+        // Also remove any previous Linear integration sections
+        const oldLinearSections = clone.querySelectorAll('#linear-github-integration, .linear-github-integration');
+        oldLinearSections.forEach(section => section.remove());
+
+        return htmlToMarkdown(clone); // Return full description without firstSectionOnly filter
+    }
+
     function checkExistingLink() {
         const title = getPRTitle();
-        const description = getPRDescription();
+        // For detection purposes, always get the full description without firstSectionOnly filter
+        const fullDescription = getPRDescriptionForDetection();
         
         console.log('[Linear Detection] Checking for existing links...');
         console.log('[Linear Detection] Title:', title);
-        console.log('[Linear Detection] Description:', description);
+        console.log('[Linear Detection] Full Description (for detection):', fullDescription);
         
         let linkedIssueId = null;
         
@@ -327,7 +349,7 @@
             console.log('[Linear Detection] Found bracket format in title:', linkedIssueId);
         } else {
             // Check for magic words with Linear issue IDs in title or description
-            const fullText = `${title}\n${description}`;
+            const fullText = `${title}\n${fullDescription}`;
             
             // Pattern for magic words with bare issue IDs (e.g., "Fixes HOG-14")
             const bareIdPatterns = [
