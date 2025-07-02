@@ -561,142 +561,80 @@
     }
 
     function updatePRTitle(linearIssueId) {
-        console.log('[PR Update] Starting PR title update for:', linearIssueId);
+        console.log('[PR Update] Starting PR description update for:', linearIssueId);
         
-        // Look for the title edit button in the header
-        const titleEditButton = document.querySelector('#partial-discussion-header > div.gh-header-show > div > div > button');
-        
-        if (!titleEditButton) {
-            console.error('[PR Update] Could not find title edit button');
-            showManualInstructions(linearIssueId);
-            return;
-        }
-        
-        console.log('[PR Update] Found title edit button, clicking...');
-        titleEditButton.click();
-        
-        // Wait for the title input to appear
-        setTimeout(() => {
-            const titleInput = document.querySelector('#issue_title');
-            if (!titleInput) {
-                console.error('[PR Update] Could not find title input field');
-                showManualInstructions(linearIssueId);
-                return;
-            }
-            
-            console.log('[PR Update] Found title input, updating...');
-            
-            // Get current title
-            let currentTitle = titleInput.value;
-            console.log('[PR Update] Current title:', currentTitle);
-            
-            // Check if Linear ID already exists in title
-            const linearPattern = /^\[?([A-Z]+-\d+)\]?\s*/;
-            const newPrefix = `[${linearIssueId}] `;
-            
-            if (linearPattern.test(currentTitle)) {
-                // Replace existing Linear ID
-                currentTitle = currentTitle.replace(linearPattern, newPrefix);
-                console.log('[PR Update] Replaced existing Linear ID in title');
-            } else {
-                // Add new Linear ID prefix
-                currentTitle = newPrefix + currentTitle;
-                console.log('[PR Update] Added Linear ID prefix to title');
-            }
-            
-            // Update title input
-            titleInput.value = currentTitle;
-            titleInput.focus();
-            
-            // Trigger change events
-            const events = ['input', 'change', 'keyup'];
-            events.forEach(eventType => {
-                const event = new Event(eventType, { bubbles: true });
-                titleInput.dispatchEvent(event);
-            });
-            
-            console.log('[PR Update] Updated title to:', currentTitle);
-            
-            // Find and click the save button
-            setTimeout(() => {
-                // Look for save button with multiple selectors
-                const saveSelectors = [
-                    '#edit_header_3195073799 > div > button.Button--secondary.Button--medium.Button',
-                    'button.Button--secondary[type="submit"]',
-                    'button:contains("Save")',
-                    '.Button--secondary .Button--medium',
-                    '[data-testid="save-button"]'
-                ];
-                
-                let saveButton = null;
-                for (const selector of saveSelectors) {
-                    saveButton = document.querySelector(selector);
-                    if (saveButton && saveButton.offsetParent !== null) {
-                        console.log('[PR Update] Found save button with selector:', selector);
-                        break;
-                    }
-                }
-                
-                if (saveButton) {
-                    saveButton.click();
-                    console.log('[PR Update] Clicked save button');
-                    showNotification(`✅ PR title updated with Linear issue ${linearIssueId}`, 'success');
-                    
-                    // Update the status in our UI and change button behavior
-                    setTimeout(() => {
-                        checkExistingLink(); // This will update the status with link and change button
-                    }, 1000);
-                } else {
-                    console.error('[PR Update] Could not find save button');
-                    showNotification('Please save the title changes manually', 'error');
-                }
-            }, 300);
-            
-        }, 500);
+        // Skip title update and go directly to description update
+        openDropdownAndEdit(linearIssueId);
     }
     
     function openDropdownAndEdit(linearIssueId) {
-        // Find and open the dropdown
-        const firstCommentHeader = document.querySelector('.timeline-comment-header');
-        if (!firstCommentHeader) {
+        console.log('[PR Update] Looking for PR description edit button...');
+        
+        // Find the first timeline comment (PR description) specifically
+        const firstTimelineComment = document.querySelector('.timeline-comment');
+        if (!firstTimelineComment) {
+            console.error('[PR Update] Could not find first timeline comment');
             showManualInstructions(linearIssueId);
             return;
         }
         
-        const detailsElement = firstCommentHeader.querySelector('details');
+        console.log('[PR Update] Found first timeline comment, looking for edit controls...');
+        
+        // Look for the comment header within the first comment
+        const commentHeader = firstTimelineComment.querySelector('.timeline-comment-header');
+        if (!commentHeader) {
+            console.error('[PR Update] Could not find comment header in first comment');
+            showManualInstructions(linearIssueId);
+            return;
+        }
+        
+        // Try to find a direct edit button first (sometimes visible)
+        let editButton = firstTimelineComment.querySelector('.js-comment-edit-button');
+        if (editButton && editButton.offsetParent !== null) {
+            console.log('[PR Update] Found direct edit button, clicking...');
+            editButton.click();
+            setTimeout(() => findAndUpdateTextarea(linearIssueId), 300);
+            return;
+        }
+        
+        // Look for dropdown menu in the comment header
+        const detailsElement = commentHeader.querySelector('details');
         if (!detailsElement) {
+            console.error('[PR Update] Could not find dropdown menu in comment header');
             showManualInstructions(linearIssueId);
             return;
         }
         
-        console.log('[PR Update] Opening dropdown...');
+        console.log('[PR Update] Opening dropdown menu...');
         detailsElement.setAttribute('open', 'true');
         
         // Wait for dropdown to render and look for edit button
         setTimeout(() => {
-            const editButton = detailsElement.querySelector('.js-comment-edit-button');
-            if (editButton) {
+            // Look for edit button specifically within this dropdown
+            const dropdownEditButton = detailsElement.querySelector('.js-comment-edit-button');
+            if (dropdownEditButton) {
                 console.log('[PR Update] Found edit button in dropdown, clicking...');
-                editButton.click();
+                dropdownEditButton.click();
                 
                 // Wait for editor to load
                 setTimeout(() => findAndUpdateTextarea(linearIssueId), 300);
             } else {
                 console.error('[PR Update] Edit button not found in dropdown');
+                console.log('[PR Update] Dropdown content:', detailsElement.innerHTML);
                 showManualInstructions(linearIssueId);
             }
-        }, 200);
+        }, 300);
     }
     
     function showManualInstructions(linearIssueId) {
-        console.error('[PR Update] Could not update PR title automatically, showing manual instructions');
+        console.error('[PR Update] Could not update PR description automatically, showing manual instructions');
         
         const manualInstructions = `
             <div style="margin-top: 10px; padding: 10px; background: #f6f8fa; border-radius: 6px; font-size: 12px;">
                 <strong>Manual Update Required:</strong><br>
-                1. Click the edit button (pencil icon) next to the PR title<br>
-                2. Add "<code>[${linearIssueId}] </code>" at the beginning of the title<br>
-                3. Click "Save" to save the changes
+                1. Click the edit button (pencil icon) next to the PR description<br>
+                2. Add "<code>Fixes ${linearIssueId}</code>" at the beginning of the description<br>
+                3. Click "Update comment" to save the changes
             </div>
         `;
         
@@ -705,7 +643,7 @@
             status.innerHTML = manualInstructions;
         }
         
-        showNotification('Please update PR title manually. Instructions added below.', 'error');
+        showNotification('Please update PR description manually. Instructions added below.', 'error');
     }
     
     function findAndUpdateTextarea(linearIssueId) {
@@ -807,11 +745,17 @@
         // Find and click update button
         setTimeout(() => {
             const updateSelectors = [
+                // Target the specific Update comment button
+                'button.Button--primary[type="submit"]',
+                'button[type="submit"].Button--primary',
                 '.js-comment-update',
                 'button[type="submit"]',
                 'button[value="Save changes"]',
                 'button:contains("Update comment")',
-                '.btn-primary[type="submit"]'
+                '.btn-primary[type="submit"]',
+                // More specific selectors for the new GitHub UI
+                'button.Button--primary.Button--medium[type="submit"]',
+                'button[data-view-component="true"][type="submit"]'
             ];
             
             let updateButton = null;
@@ -886,9 +830,9 @@
             <div class="field-group">
                 <div class="checkbox-group">
                     <input type="checkbox" id="linear-auto-update" ${linearConfig.autoUpdate ? 'checked' : ''}>
-                    <label for="linear-auto-update">Automatically update PR title after creating issue</label>
+                    <label for="linear-auto-update">Automatically update PR description after creating issue</label>
                 </div>
-                <div class="help-text">When enabled, the PR title will be automatically updated with the Linear issue ID (e.g., [ABC-123] PR Title)</div>
+                <div class="help-text">When enabled, the PR description will be automatically updated with the Linear issue ID (e.g., "Fixes ABC-123" at the top)</div>
             </div>
             
             <div class="field-group">
