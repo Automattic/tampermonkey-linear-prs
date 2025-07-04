@@ -5,6 +5,7 @@
 // @description  Create Linear issues directly from GitHub PRs with full automation via Linear API
 // @author       Automattic
 // @match        https://github.com/*/*/pull/*
+// @match        https://github.a8c.com/*/*/pull/*
 // @grant        GM_xmlhttpRequest
 // @grant        GM_getValue
 // @grant        GM_setValue
