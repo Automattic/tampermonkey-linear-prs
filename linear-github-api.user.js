@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Linear GitHub API Integration
 // @namespace    https://github.com/Automattic/tampermonkey-linear-prs/
-// @version      1.2.0
+// @version      1.2.1
 // @description  Create Linear issues directly from GitHub PRs with full automation via Linear API
 // @author       Automattic
 // @match        https://github.com/*/*/pull/*
