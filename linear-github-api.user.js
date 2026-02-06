@@ -1007,7 +1007,7 @@
     }
 
     function getPRTitle() {
-        const titleElement = document.querySelector('h1[class*="prc-PageHeader-Title-"]');
+        const titleElement = document.querySelector('h1[class*="prc-PageHeader-Title-"] > span');
         return titleElement ? titleElement.textContent.trim() : '';
     }
 
