@@ -1007,7 +1007,7 @@
     }
 
     function getPRTitle() {
-        const titleElement = document.querySelector('.js-issue-title');
+        const titleElement = document.querySelector('h1[class*="prc-PageHeader-Title-"]');
         return titleElement ? titleElement.textContent.trim() : '';
     }
 
