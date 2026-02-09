@@ -1007,7 +1007,8 @@
     }
 
     function getPRTitle() {
-        const titleElement = document.querySelector('.js-issue-title');
+        // the H1 is for github.com, the `.js-issue-title` is for the self-hosted github.a8c.com
+        const titleElement = document.querySelector('h1[class*="prc-PageHeader-Title-"] > span,.js-issue-title');
         return titleElement ? titleElement.textContent.trim() : '';
     }
 
